@@ -1,0 +1,256 @@
+#!/usr/bin/env python
+# coding=utf8
+
+CONF_PATH = '/home/pi/mbot/mbot.ini'
+
+import requests as req
+import lxml.html
+import datetime
+import sqlite3
+import subprocess as sub
+import os
+import time
+from threading import Thread
+from ConfigParser import ConfigParser
+from dateutil.parser import parse
+from random import choice
+
+conf = ConfigParser()
+conf.read(CONF_PATH)
+
+class MusicBot:
+	def __init__(self, conf):
+		self.conn = sqlite3.connect(conf.get('main','db'))
+		self.cur = self.conn.cursor()
+		self.downDir = conf.get('main','downDir')
+		self.destDir = conf.get('main','destDir')
+		self.email = conf.get('mail', 'address')
+		self.apikey = conf.get('mail', 'apikey')
+		self.domain = conf.get('mail', 'domain')
+		self.downWebPath = conf.get('main', 'downWebPath')
+		self.hostPriority = ['ultramegabit', 'rapidgator', 'uploaded', 'cloudzer']
+		self.waiting = []
+		self.failed = []
+		self.released = []
+
+	def __del__(self):
+		self.conn.commit()
+		self.cur.close()
+		self.conn.close()
+
+	def getWaitingReleases(self):
+		self.cur.execute('select id,keywords from awaiting where state=0')
+		self.waiting = self.cur.fetchall()
+
+	def getFailedReleases(self):
+		self.cur.execute('select id,releasepage,releasename from awaiting where state=1')
+		self.failed = self.cur.fetchall()
+
+	def setProcessingState(self, rid, relName, relPage, relDate):
+		self.cur.execute('update awaiting set releasename=?,releasepage=?,releasedate=?,state=1 where id=?', (relName, relPage, relDate, rid))
+
+	def updateLinkAndState(self, rid, link):
+		self.cur.execute('update awaiting set linkdl=?,state=2 where id=?', (link, rid))
+
+	def downloadThread(self, cmd, rname):
+		p = sub.Popen(cmd)
+		p.wait()
+		if p.returncode == 0:
+			self.unpackAndDelete('%s/%s.rar' % (self.downDir, rname))
+
+	def unpackAndDelete(self, rarfile):
+		cmd = ['unrar', 'x', '-y', '-inul', rarfile, self.destDir]
+		p = sub.Popen(cmd)
+		p.wait()
+		os.remove(rarfile)
+
+	def composeAndSendEmail(self):
+		html  = u'Привет, друг!<br><br>'
+		html += u'Рад сообщить, что совсем недавно вышли некоторые из ожидаемых тобой релизов :-). А именно:<br>'
+		i = 1
+		for rel in self.released:
+			html += u'%d. %s GMT - <b><a href=\'%s/%s/\'>%s</a></b> (по запросу <i>%s</i>)<br>' % (i, rel['time'], self.downWebPath, rel['name'], rel['name'], rel['query'])
+			i += 1
+		html += u'<br>В случае успешного скачивания релизы будут распакованы по месту назначения и станут доступны по указанным выше ссылкам.<br>'
+		html += u'До связи! Искренне Ваш, MusicRobot.'
+
+		return req.post(
+			"https://api.mailgun.net/v2/%s/messages" % self.domain,
+			auth=("api", self.apikey),
+			data={
+				"from": "Music Scene Releases Robot <mbot@inox.mailgun.org>",
+				"to": self.email.split(','),
+				"subject": u"Выход ожидаемых релизов %s" % time.strftime('%d.%m.%Y'),
+				"html": html,
+				"text": html,
+			}
+		)
+
+	def preDbSearch(self, query):
+		try:
+			res = req.get('http://predb.me/', params={'search': query, 'cats': 'music'}, timeout=15)
+		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+			return False
+		if 'Nothing found' in res.text:
+			return False
+		tree = lxml.html.document_fromstring(res.text)
+		names = tree.xpath('//a[@class="p-title"]/text()')
+		if names:
+			return names[0]
+		else:
+			return False
+
+	def scenelogSearch(self, query):
+		try:
+			res = req.get('http://scenelog.eu/', params={'s': query, 'cat': 8}, timeout=15)
+		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+			return False
+		if 'Not Found' in res.text:
+			return False
+		parsed = self.pageParse(res.text)
+		if parsed:
+			return parsed[0]
+		else:
+			return False
+
+	def checkReleases(self):
+		for row in self.waiting:
+			preDbName = self.preDbSearch(row[1])
+			if preDbName:
+				searchTerm = preDbName
+			else:
+				searchTerm = row[1]
+			rel = self.scenelogSearch(searchTerm)
+			if rel:
+				try:
+					res = req.get(rel['link'], timeout=15)
+				except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+					continue
+				dllinks = self.getLinks(res.text)
+				self.setProcessingState(row[0], rel['name'], rel['link'], rel['time'].strftime('%s'))
+				actualLink = self.downloadLink(dllinks, rel['name'])
+				if isinstance(actualLink, str):
+					self.updateLinkAndState(row[0], actualLink)
+				self.released.append({'name': rel['name'], 'query': row[1], 'time': rel['time'].strftime('%d.%m.%Y %H:%M:%S')})
+
+	def processFailedReleases(self):
+		self.getFailedReleases()
+		if self.failed:
+			for row in self.failed:
+				try:
+					res = req.get(row[1], timeout=15)
+				except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+					continue
+				links = self.getLinks(res.text)
+				actualLink = self.downloadLink(links, row[2])
+				if isinstance(actualLink, str):
+					self.updateLinkAndState(row[0], actualLink)
+
+	def pageParse(self, html):
+		tree = lxml.html.document_fromstring(html)
+		links = tree.xpath('//a[@rel="bookmark"]')
+		times = tree.xpath('//span[@class="localtime"]/@data-lttime')
+		if not links or not times:
+			return False
+		result = []
+		i = 0
+		for link in links:
+			tm = parse(times[i])
+			if 'VA' not in link.text:
+				result.append({'name': link.text, 'link': link.get('href'), 'time': tm})
+		return result
+
+	def getLinks(self, html):
+		tree = lxml.html.document_fromstring(html)
+		links = tree.xpath('//div[@class="download"]/*/a/@href')
+		if not links:
+			return False
+		return links
+
+	def putlockerDownload(self, url, relname):
+		dlCmd = ['wget', '-T20', '-t5', '-q', '-O%s/%s.rar' % (self.downDir, relname), 'http://www.putlocker.com%s' % url]
+		t = Thread(target=self.downloadThread, args=(dlCmd, relname))
+		t.start()
+		return True
+
+	def putlockerGetDirectLink(self, url):
+		sess = req.Session()
+		try:
+			res = sess.get(url, timeout=10)
+		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+			return False
+		tree = lxml.html.document_fromstring(res.text)
+		hash = tree.xpath('//input[@name="hash"]/@value')
+		if not hash:
+			return False
+		try:
+			res = sess.post(url, data={'hash': hash[0], 'confirm': 'Continue as Free User'}, timeout=10)
+		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+			return False
+		tree = lxml.html.document_fromstring(res.text)
+		link = tree.xpath('//div[@class="file_splash"]/a/@href')
+		if not link:
+			return False
+		return link[0]
+
+	def rapid8Download(self, url, relname):
+		servers = ['6imc12', '5adldc11']
+		try:
+			r = req.post(
+				'http://%s.rapid8.com/download/index.php' % choice(servers), 
+				data={'dlurl': url, 'x': 4, 'y': 10}, 
+				headers={'Referer': 'http://rapid8.com/stage2.php'}, 
+				timeout=25,
+				stream=True,
+				allow_redirects=False
+			)
+		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+			return False
+
+		if r.status_code == 200 and 'text/html' not in r.headers['content-type']:
+			fn = '%s/%s.rar' % (self.downDir, relname)
+			with open(fn, 'wb') as f:
+				for chunk in r.iter_content(8192): 
+					if chunk:
+						f.write(chunk)
+						f.flush()
+			self.unpackAndDelete(fn)
+			return True
+		else:
+			return False
+
+	def downloadLink(self, urls, relname):
+		plFound = False
+		for url in urls:
+			if 'putlocker' in url:
+				plFound = True
+				break
+		if plFound:
+			link = self.putlockerGetDirectLink(url)
+			if link:
+				self.putlockerDownload(link, relname)
+				return url
+			else:
+				for host in self.hostPriority:
+					for url in urls:
+						if host in url:
+							if self.rapid8Download(url, relname):
+								return url
+				return False
+		else:
+			for url in urls:
+				if self.rapid8Download(url, relname):
+					return url
+			return False
+
+	def workflow(self):
+		self.processFailedReleases()
+		self.getWaitingReleases()
+		if self.waiting:
+			self.checkReleases()
+			if self.released:
+				self.composeAndSendEmail()
+
+if __name__ == '__main__':
+	mbot = MusicBot(conf)
+	mbot.workflow()
