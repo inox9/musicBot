@@ -78,7 +78,7 @@ class MusicBot:
 			"https://api.mailgun.net/v2/%s/messages" % self.domain,
 			auth=("api", self.apikey),
 			data={
-				"from": "Music Scene Releases Robot <mbot@inox.mailgun.org>",
+				"from": "Music Scene Releases Robot <mbot@%s>" % self.domain,
 				"to": self.email.split(','),
 				"subject": u"Выход ожидаемых релизов %s" % time.strftime('%d.%m.%Y'),
 				"html": html,
