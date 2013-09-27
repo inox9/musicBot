@@ -231,18 +231,12 @@ class MusicBot:
 			if link:
 				self.putlockerDownload(link, relname)
 				return url
-			else:
-				for host in self.hostPriority:
-					for url in urls:
-						if host in url:
-							if self.rapid8Download(url, relname):
-								return url
-				return False
-		else:
+		for host in self.hostPriority:
 			for url in urls:
-				if self.rapid8Download(url, relname):
-					return url
-			return False
+				if host in url:
+					if self.rapid8Download(url, relname):
+						return url
+		return False
 
 	def workflow(self):
 		self.processFailedReleases()
