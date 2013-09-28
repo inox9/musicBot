@@ -12,10 +12,13 @@ try {
 
 switch ($_REQUEST['action']) {
 	case 'add':
-	$qr = 'insert into awaiting (dateadded,keywords,state) values (?, ?, 0)';
-	$res = $db->prepare($qr);
-	if ($res->execute(array(time(), $_POST['keywords']))) print 'OK';
-	else die('DB error!');
+	$res = $db->prepare('insert into awaiting (dateadded,keywords,state) values (?, ?, 0)');
+	try {
+		$res->execute(array(time(), $_POST['keywords']));
+	} catch (PDOException $e) {
+		die($e->getMessage());
+	}
+	print 'OK';
 	break;
 
 	case 'get':
