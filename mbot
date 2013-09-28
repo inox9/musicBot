@@ -49,7 +49,7 @@ class MusicBot:
 	def setProcessingState(self, rid, relName, relPage, relDate):
 		self.cur.execute('update awaiting set releasename=?,releasepage=?,releasedate=?,state=1 where id=?', (relName, relPage, relDate, rid))
 
-	def updateLinkAndState(self, rid, link):
+	def setCompletedState(self, rid, link):
 		self.cur.execute('update awaiting set linkdl=?,state=2 where id=?', (link, rid))
 
 	def downloadThread(self, cmd, rname):
@@ -130,7 +130,7 @@ class MusicBot:
 				self.setProcessingState(row[0], rel['name'], rel['link'], rel['time'].strftime('%s'))
 				actualLink = self.downloadLink(dllinks, rel['name'])
 				if isinstance(actualLink, str):
-					self.updateLinkAndState(row[0], actualLink)
+					self.setCompletedState(row[0], actualLink)
 				self.released.append({'name': rel['name'], 'query': row[1], 'time': rel['time'].strftime('%d.%m.%Y %H:%M:%S')})
 
 	def processFailedReleases(self):
@@ -144,7 +144,7 @@ class MusicBot:
 				links = self.getLinks(res.text)
 				actualLink = self.downloadLink(links, row[2])
 				if isinstance(actualLink, str):
-					self.updateLinkAndState(row[0], actualLink)
+					self.setCompletedState(row[0], actualLink)
 
 	def pageParse(self, html):
 		tree = lxml.html.document_fromstring(html)
