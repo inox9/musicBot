@@ -22,7 +22,7 @@ switch ($_REQUEST['action']) {
 	break;
 
 	case 'get':
-	if (!$res = $db->query('select id,dateadded,keywords,releasename,releasedate,releasepage,state from awaiting order by dateadded desc')) {
+	if (!$res = $db->query('select dateadded,keywords,releasename,releasedate,releasepage,state from awaiting order by state,-dateadded')) {
 		die('DB error!');
 	}
 	$result = array();

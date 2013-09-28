@@ -18,12 +18,13 @@
 			var ignored = ['state', 'releasePage']
 			rows = $.map(data, function (item, i) {
 				tr = $('<tr>')
+				tr.append('<td>' + (i+1) + '.</td>')
 				if (item.state == 1) tr.addClass('warning')
 				else if (item.state == 2) tr.addClass('success')
 				$.each(item, function (k, v) {
 					if ($.inArray(k, ignored) < 0) {
 						td = $('<td>')
-						v != null ? td.html(v + (k == 'id' ? '.' : '')) : td.html('N/A')
+						v != null ? td.html(v) : td.html('N/A')
 						tr.append(td)
 					}
 				})
