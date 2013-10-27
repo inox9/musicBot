@@ -10,6 +10,7 @@ import sqlite3
 import subprocess as sub
 import os
 import time
+import re
 from threading import Thread
 from ConfigParser import ConfigParser
 from dateutil.parser import parse
@@ -59,7 +60,15 @@ class MusicBot:
 			self.unpackAndDelete('%s/%s.rar' % (self.downDir, rname))
 
 	def unpackAndDelete(self, rarfile):
-		cmd = ['unrar', 'x', '-y', '-inul', rarfile, self.destDir]
+		rem = re.match(r'(\d{4})-\w+\.\w{3}$', rarfile)
+		if rem:
+			year = rem[1]
+		else:
+			year = time.strftime('%Y')
+		finalPath = '%s/%s' % (self.destDir, year)
+		if not os.path.exists(finalPath):
+			os.mkdir(finalPath, 0755)
+		cmd = ['unrar', 'x', '-y', '-inul', rarfile, finalPath]
 		p = sub.Popen(cmd)
 		p.wait()
 		os.remove(rarfile)
@@ -69,7 +78,13 @@ class MusicBot:
 		html += u'Рад сообщить, что совсем недавно вышли некоторые из ожидаемых тобой релизов :-). А именно:<br>'
 		i = 1
 		for rel in self.released:
-			html += u'%d. %s GMT - <b><a href=\'%s/%s/\'>%s</a></b> (по запросу <i>%s</i>)<br>' % (i, rel['time'], self.downWebPath, rel['name'], rel['name'], rel['query'])
+			rem = re.match(r'(\d{4})-\w+$', rel['name'])
+			if rem:
+				year = rem[1]
+			else:
+				year = time.strftime('%Y')
+			webPath = '%s/%s' % (self.downWebPath, year)
+			html += u'%d. %s GMT - <b><a href=\'%s/%s/\'>%s</a></b> (по запросу <i>%s</i>)<br>' % (i, rel['time'], webPath, rel['name'], rel['name'], rel['query'])
 			i += 1
 		html += u'<br>В случае успешного скачивания релизы будут распакованы по месту назначения и станут доступны по указанным выше ссылкам.<br>'
 		html += u'До связи! Искренне Ваш, MusicRobot.'
@@ -80,7 +95,7 @@ class MusicBot:
 			data={
 				"from": "Music Scene Releases Robot <mbot@%s>" % self.domain,
 				"to": self.email.split(','),
-				"subject": u"Выход ожидаемых релизов %s" % time.strftime('%d.%m.%Y'),
+				"subject": u"Выход ожидаемых релизов %s (%d)" % (time.strftime('%d.%m.%Y'), len(self.released))
 				"html": html,
 				"text": html,
 			}
