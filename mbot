@@ -238,7 +238,7 @@ class MusicBot:
 	def downloadLink(self, urls, relname):
 		plFound = False
 		for url in urls:
-			if 'putlocker' in url:
+			if 'firedrive' in url:
 				plFound = True
 				break
 		if plFound:
