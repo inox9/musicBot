@@ -29,7 +29,7 @@ class MusicBot:
 		self.apikey = conf.get('mail', 'apikey')
 		self.domain = conf.get('mail', 'domain')
 		self.downWebPath = conf.get('main', 'downWebPath')
-		self.hostPriority = ['ultramegabit', 'rapidgator', 'uploaded', 'cloudzer']
+		self.hostPriority = ['rapidgator', 'uploaded']
 		self.waiting = []
 		self.failed = []
 		self.released = []
@@ -117,7 +117,7 @@ class MusicBot:
 
 	def scenelogSearch(self, query):
 		try:
-			res = req.get('http://scenelog.eu/', params={'s': query, 'cat': 8}, timeout=15)
+			res = req.get('http://scnlog.eu/', params={'s': query, 'cat': 8}, timeout=15)
 		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
 			return False
 		if 'Not Found' in res.text:
@@ -183,28 +183,28 @@ class MusicBot:
 			return False
 		return links
 
-	def putlockerDownload(self, url, relname):
-		dlCmd = ['wget', '-T20', '-t5', '-q', '-O%s/%s.rar' % (self.downDir, relname), 'http://www.putlocker.com%s' % url]
+	def fireDriveDownload(self, url, relname):
+		dlCmd = ['wget', '-T20', '-t5', '-q', '-O%s/%s.rar' % (self.downDir, relname), url]
 		t = Thread(target=self.downloadThread, args=(dlCmd, relname))
 		t.start()
 		return True
 
-	def putlockerGetDirectLink(self, url):
+	def fireDriveGetDirectLink(self, url):
 		sess = req.Session()
 		try:
 			res = sess.get(url, timeout=10)
 		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
 			return False
 		tree = lxml.html.document_fromstring(res.text)
-		hash = tree.xpath('//input[@name="hash"]/@value')
+		hash = tree.xpath('//input[@name="confirm"]/@value')
 		if not hash:
 			return False
 		try:
-			res = sess.post(url, data={'hash': hash[0], 'confirm': 'Continue as Free User'}, timeout=10)
+			res = sess.post(url, data={'confirm': hash[0]}, timeout=10)
 		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
 			return False
 		tree = lxml.html.document_fromstring(res.text)
-		link = tree.xpath('//div[@class="file_splash"]/a/@href')
+		link = tree.xpath('//a[@id="archive_download_button"]/@href')
 		if not link:
 			return False
 		return link[0]
@@ -242,9 +242,9 @@ class MusicBot:
 				plFound = True
 				break
 		if plFound:
-			link = self.putlockerGetDirectLink(url)
+			link = self.fireDriveGetDirectLink(url)
 			if link:
-				self.putlockerDownload(link, relname)
+				self.fireDriveDownload(link, relname)
 				return url
 		for host in self.hostPriority:
 			for url in urls:
