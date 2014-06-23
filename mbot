@@ -29,7 +29,7 @@ class MusicBot:
 		self.apikey = conf.get('mail', 'apikey')
 		self.domain = conf.get('mail', 'domain')
 		self.downWebPath = conf.get('main', 'downWebPath')
-		self.hostPriority = ['rapidgator', 'uploaded']
+		self.hostPriority = ['uploaded',]
 		self.waiting = []
 		self.failed = []
 		self.released = []
@@ -209,6 +209,29 @@ class MusicBot:
 			return False
 		return link[0]
 
+	def leecherUsDownload(self, url, relname):
+		sess = req.Session()
+		try:
+			res = sess.post('http://leecher.us/Generating', data={'links': url}, timeout=10)
+		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+			return False
+		tree = lxml.html.document_fromstring(res.text)
+		dl_form = tree.xpath('//form/@action')
+		if not dl_form:
+			return False
+		try:
+			res = sess.post(dl_form, timeout=10)
+		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
+			return False
+		tree = lxml.html.document_fromstring(res.text)
+		dl_onclick = tree.xpath('//button[@class="subscribe"]/@onclick')
+		rem = re.match(r'\'(http://[^\']+)\',', dl_onclick)
+		if rem:
+			self.fireDriveDownload(rem[1], relname)
+			return url
+		else:
+			return False
+		
 	def rapid8Download(self, url, relname):
 		servers = ['6imc12', '5adldc11']
 		try:
@@ -236,12 +259,12 @@ class MusicBot:
 			return False
 
 	def downloadLink(self, urls, relname):
-		plFound = False
+		fdFound = False
 		for url in urls:
 			if 'firedrive' in url:
-				plFound = True
+				fdFound = True
 				break
-		if plFound:
+		if fdFound:
 			link = self.fireDriveGetDirectLink(url)
 			if link:
 				self.fireDriveDownload(link, relname)
@@ -249,7 +272,7 @@ class MusicBot:
 		for host in self.hostPriority:
 			for url in urls:
 				if host in url:
-					if self.rapid8Download(url, relname):
+					if self.leecherUsDownload(url, relname):
 						return url
 		return False
 
