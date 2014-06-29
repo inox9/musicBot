@@ -7,21 +7,23 @@
 from selenium.webdriver import PhantomJS
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 import re
 
 class Leecherus(object):
 	def __init__(self, url):
 		self.url = url
-		DesiredCapabilities.PHANTOMJS['phantomjs.page.settings.loadImages'] = False
 		self.browser = PhantomJS()
-		self.browser.implicitly_wait(20)
 
 	def get_link(self):
 		try:
 			self.browser.get('http://leecher.us')
-			self.browser.find_element_by_name('links').send_keys(self.url)
-			self.browser.find_element_by_id('get_link').click()
-			self.browser.find_element_by_xpath('//button[@class="subscribe"]').click()
+			wdw = WebDriverWait(self.browser, 10)
+			wdw.until(EC.visibility_of_element_located((By.NAME, 'links'))).send_keys(self.url)
+			wdw.until(EC.element_to_be_clickable((By.ID, 'get_link'))).click()
+			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).click()
 			self.browser.switch_to_window(self.browser.window_handles[1])
 			onclick = self.browser.find_element_by_xpath('//button[@class="subscribe"]').get_attribute('onclick')
 		except (WebDriverException, NoSuchElementException):
