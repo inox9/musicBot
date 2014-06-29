@@ -1,6 +1,6 @@
 <?php
 
-$config = '/home/pi/mbot/mbot.ini';
+$config = '/home/inox/mbot/mbot.ini';
 
 $conf = @parse_ini_file($config, true);
 try {
