@@ -14,7 +14,7 @@ class Leecherus(object):
 		self.url = url
 		DesiredCapabilities.PHANTOMJS['phantomjs.page.settings.loadImages'] = False
 		self.browser = PhantomJS()
-		self.browser.implicitly_wait(10)
+		self.browser.implicitly_wait(20)
 
 	def get_link(self):
 		try:
