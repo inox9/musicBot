@@ -26,7 +26,10 @@ class MusicBot:
 		self.conn = sqlite3.connect(conf.get('main','db'))
 		self.cur = self.conn.cursor()
 		self.downDir = conf.get('main','downDir')
-		self.destDir = conf.get('main','destDir')
+		self.unpackDir = conf.get('main','unpackDir')
+		self.destHost = conf.get('main', 'destHost')
+		self.destPort = conf.get('main', 'destPort')
+		self.destDir = conf.get('main', 'destDir')
 		self.email = conf.get('mail', 'address')
 		self.apikey = conf.get('mail', 'apikey')
 		self.domain = conf.get('mail', 'domain')
@@ -64,24 +67,24 @@ class MusicBot:
 		self.cur.execute('update awaiting set linkdl=?,state=2 where id=?', (link, rid))
 
 	def downloadThread(self, cmd, rname):
-		p = sub.Popen(cmd)
-		p.wait()
-		if p.returncode == 0:
-			self.unpackAndDelete('%s/%s.rar' % (self.downDir, rname))
+		retcode = sub.call(cmd)
+		if retcode == 0:
+			self.unpackAndUpload('%s/%s.rar' % (self.downDir, rname), rname)
 
-	def unpackAndDelete(self, rarfile):
+	def unpackAndUpload(self, rarfile, relname):
 		rem = re.match(r'(\d{4})-\w+\.\w{3}$', rarfile)
-		if rem:
-			year = rem[1]
-		else:
-			year = time.strftime('%Y')
-		finalPath = '%s/%s' % (self.destDir, year)
-		if not os.path.exists(finalPath):
-			os.mkdir(finalPath, 0755)
-		cmd = ['unrar', 'x', '-y', '-inul', rarfile, finalPath]
-		p = sub.Popen(cmd)
-		p.wait()
+		year = rem[1] if rem else time.strftime('%Y')
+		cmd = ['unrar', 'x', '-y', '-inul', rarfile, self.unpackDir]
+		retcode = sub.call(cmd)
+		if retcode != 0:
+			return False
 		os.remove(rarfile)
+		os.chdir(self.unpackDir)
+		cmd = ['rsync', '-Rqave', 'ssh -p%s' % self.destPort, '%s/' % relname, '%s:%s/%s' % (self.destHost, self.destDir, year)]
+		retcode = sub.call(cmd)
+		if retcode == 0:
+			sub.call(['rm', '-rf', relname])
+		os.chdir(os.path.expanduser('~'))
 
 	def composeAndSendEmail(self):
 		html  = u'Привет, друг!<br><br>'
