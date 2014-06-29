@@ -46,7 +46,7 @@ class MusicBot:
 		self.cur.close()
 		self.conn.close()
 
-	def getRightModule(host):
+	def getRightModule(self, host):
 		return host if self.module_map[host] == 1 else self.module_map[host]
 
 	def getWaitingReleases(self):
