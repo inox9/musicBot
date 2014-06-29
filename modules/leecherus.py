@@ -5,11 +5,10 @@
 '''
 
 from selenium.webdriver import PhantomJS
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.common.exceptions import WebDriverException, NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import WebDriverException, NoSuchElementException
 import re
 
 class Leecherus(object):
