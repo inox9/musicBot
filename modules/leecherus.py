@@ -1,4 +1,9 @@
 # coding=utf8
+'''
+	Leecher.us direct link fetcher, uses phantomjs/selenium
+	version 0.1
+'''
+
 from selenium.webdriver import PhantomJS
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
@@ -6,12 +11,12 @@ import time
 import re
 
 class Leecherus(object):
-	def __init__(url):
+	def __init__(self, url):
 		self.url = url
 		DesiredCapabilities.PHANTOMJS['phantomjs.page.settings.loadImages'] = False
 		self.browser = PhantomJS()
 
-	def get_link():
+	def get_link(self):
 		try:
 			self.browser.get('http://leecher.us')
 			time.sleep(5)

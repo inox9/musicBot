@@ -1,15 +1,20 @@
 # coding=utf8
+'''
+	FireDrive.com direct link fetcher
+	version 0.1
+'''
+
 import requests as req
 import lxml.html
 
-class Firedrive:
-	def __init__(url):
+class Firedrive(object):
+	def __init__(self, url):
 		self.url = url
 
-	def get_link():
+	def get_link(self):
 		sess = req.Session()
 		try:
-			res = sess.get(url, timeout=10)
+			res = sess.get(self.url, timeout=10)
 		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
 			return False
 		tree = lxml.html.document_fromstring(res.text)
@@ -17,7 +22,7 @@ class Firedrive:
 		if not hash:
 			return False
 		try:
-			res = sess.post(url, data={'confirm': hash[0]}, timeout=10)
+			res = sess.post(self.url, data={'confirm': hash[0]}, timeout=10)
 		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
 			return False
 		tree = lxml.html.document_fromstring(res.text)
