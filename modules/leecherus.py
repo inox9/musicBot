@@ -7,7 +7,6 @@
 from selenium.webdriver import PhantomJS
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
-import time
 import re
 
 class Leecherus(object):
@@ -15,11 +14,11 @@ class Leecherus(object):
 		self.url = url
 		DesiredCapabilities.PHANTOMJS['phantomjs.page.settings.loadImages'] = False
 		self.browser = PhantomJS()
+		self.browser.implicitly_wait(10)
 
 	def get_link(self):
 		try:
 			self.browser.get('http://leecher.us')
-			time.sleep(5)
 			self.browser.find_element_by_name('links').send_keys(self.url)
 			self.browser.find_element_by_id('get_link').click()
 			self.browser.find_element_by_xpath('//button[@class="subscribe"]').click()
@@ -27,6 +26,8 @@ class Leecherus(object):
 			onclick = self.browser.find_element_by_xpath('//button[@class="subscribe"]').get_attribute('onclick')
 		except (WebDriverException, NoSuchElementException):
 			return False
+		finally:
+			self.browser.quit()
 		m = re.search("'(http://[^']+)',", onclick)
 		if not m:
 			return False
