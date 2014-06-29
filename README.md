@@ -1,4 +1,4 @@
 musicBot
 ========
 
-scenelog.eu Music Releases watcher bot
+scnlog.eu Music Releases watcher bot & downloader

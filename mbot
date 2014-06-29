@@ -11,13 +11,15 @@ import subprocess as sub
 import os
 import time
 import re
+import sys
 from threading import Thread
 from ConfigParser import ConfigParser
 from dateutil.parser import parse
-from random import choice
 
 conf = ConfigParser()
 conf.read(CONF_PATH)
+d = os.path.dirname(os.path.abspath(__file__))
+sys.path.append('%s/modules' % d)
 
 class MusicBot:
 	def __init__(self, conf):
@@ -29,7 +31,12 @@ class MusicBot:
 		self.apikey = conf.get('mail', 'apikey')
 		self.domain = conf.get('mail', 'domain')
 		self.downWebPath = conf.get('main', 'downWebPath')
-		self.hostPriority = ['uploaded',]
+		self.hostPriority = ['firedrive', 'uploaded', 'oboom']
+		self.module_map = {
+			'firedrive': 1, 
+			'uploaded': 'leecherus',
+			'oboom': 'leecherus'
+		}
 		self.waiting = []
 		self.failed = []
 		self.released = []
@@ -38,6 +45,9 @@ class MusicBot:
 		self.conn.commit()
 		self.cur.close()
 		self.conn.close()
+
+	def getRightModule(host):
+		return host if self.module_map[host] == 1 else self.module_map[host]
 
 	def getWaitingReleases(self):
 		self.cur.execute('select id,keywords from awaiting where state=0')
@@ -95,7 +105,7 @@ class MusicBot:
 			data={
 				"from": "Music Scene Releases Robot <mbot@%s>" % self.domain,
 				"to": self.email.split(','),
-				"subject": u"Выход ожидаемых релизов %s (%d)" % (time.strftime('%d.%m.%Y'), len(self.released))
+				"subject": u"Выход ожидаемых релизов %s (%d)" % (time.strftime('%d.%m.%Y'), len(self.released)),
 				"html": html,
 				"text": html,
 			}
@@ -183,96 +193,22 @@ class MusicBot:
 			return False
 		return links
 
-	def fireDriveDownload(self, url, relname):
+	def executeDownload(self, url, relname):
 		dlCmd = ['wget', '-T20', '-t5', '-q', '-O%s/%s.rar' % (self.downDir, relname), url]
 		t = Thread(target=self.downloadThread, args=(dlCmd, relname))
 		t.start()
 		return True
 
-	def fireDriveGetDirectLink(self, url):
-		sess = req.Session()
-		try:
-			res = sess.get(url, timeout=10)
-		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
-			return False
-		tree = lxml.html.document_fromstring(res.text)
-		hash = tree.xpath('//input[@name="confirm"]/@value')
-		if not hash:
-			return False
-		try:
-			res = sess.post(url, data={'confirm': hash[0]}, timeout=10)
-		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
-			return False
-		tree = lxml.html.document_fromstring(res.text)
-		link = tree.xpath('//a[@id="archive_download_button"]/@href')
-		if not link:
-			return False
-		return link[0]
-
-	def leecherUsDownload(self, url, relname):
-		sess = req.Session()
-		try:
-			res = sess.post('http://leecher.us/Generating', data={'links': url}, timeout=10)
-		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
-			return False
-		tree = lxml.html.document_fromstring(res.text)
-		dl_form = tree.xpath('//form/@action')
-		if not dl_form:
-			return False
-		try:
-			res = sess.post(dl_form, timeout=10)
-		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
-			return False
-		tree = lxml.html.document_fromstring(res.text)
-		dl_onclick = tree.xpath('//button[@class="subscribe"]/@onclick')
-		rem = re.match(r'\'(http://[^\']+)\',', dl_onclick)
-		if rem:
-			self.fireDriveDownload(rem[1], relname)
-			return url
-		else:
-			return False
-		
-	def rapid8Download(self, url, relname):
-		servers = ['6imc12', '5adldc11']
-		try:
-			r = req.post(
-				'http://%s.rapid8.com/download/index.php' % choice(servers), 
-				data={'dlurl': url, 'x': 4, 'y': 10}, 
-				headers={'Referer': 'http://rapid8.com/stage2.php'}, 
-				timeout=25,
-				stream=True,
-				allow_redirects=False
-			)
-		except (req.exceptions.Timeout, req.exceptions.ConnectionError, req.exceptions.HTTPError):
-			return False
-
-		if r.status_code == 200 and 'text/html' not in r.headers['content-type']:
-			fn = '%s/%s.rar' % (self.downDir, relname)
-			with open(fn, 'wb') as f:
-				for chunk in r.iter_content(8192): 
-					if chunk:
-						f.write(chunk)
-						f.flush()
-			self.unpackAndDelete(fn)
-			return True
-		else:
-			return False
-
 	def downloadLink(self, urls, relname):
-		fdFound = False
-		for url in urls:
-			if 'firedrive' in url:
-				fdFound = True
-				break
-		if fdFound:
-			link = self.fireDriveGetDirectLink(url)
-			if link:
-				self.fireDriveDownload(link, relname)
-				return url
 		for host in self.hostPriority:
 			for url in urls:
 				if host in url:
-					if self.leecherUsDownload(url, relname):
+					mdl = self.getRightModule(host)
+					mod = __import__(mdl)
+					dl_cls = getattr(mod, mdl.capitalize())
+					link = dl_cls(url).get_link()
+					if link:
+						self.executeDownload(link, relname)
 						return url
 		return False
 
