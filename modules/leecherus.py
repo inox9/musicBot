@@ -24,12 +24,10 @@ class Leecherus(object):
 			wdw.until(EC.element_to_be_clickable((By.ID, 'get_link'))).click()
 			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).click()
 			self.browser.switch_to_window(self.browser.window_handles[1])
-			onclick = self.browser.find_element_by_xpath('//button[@class="subscribe"]').get_attribute('onclick')
+			onclick = wdw.until(EC.presence_of_element_located((By.XPATH, '//button[@class="subscribe"]'))).get_attribute('onclick')
 		except (WebDriverException, NoSuchElementException):
 			return False
 		finally:
 			self.browser.quit()
 		m = re.search("'(http://[^']+)',", onclick)
-		if not m:
-			return False
-		return m.group(1)
+		return False if not m else m.group(1)
