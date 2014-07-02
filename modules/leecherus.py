@@ -8,7 +8,7 @@ from selenium.webdriver import PhantomJS
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import WebDriverException, NoSuchElementException
+from selenium.common.exceptions import WebDriverException, NoSuchElementException, TimeoutException
 import re
 
 class Leecherus(object):
@@ -25,7 +25,7 @@ class Leecherus(object):
 			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).click()
 			self.browser.switch_to_window(self.browser.window_handles[1])
 			onclick = wdw.until(EC.presence_of_element_located((By.XPATH, '//button[@class="subscribe"]'))).get_attribute('onclick')
-		except (WebDriverException, NoSuchElementException):
+		except (WebDriverException, NoSuchElementException, TimeoutException):
 			return False
 		finally:
 			self.browser.quit()
