@@ -197,7 +197,7 @@ class MusicBot:
 		return links
 
 	def executeDownload(self, url, relname):
-		dlCmd = ['wget', '-T20', '-t5', '-q', '-O%s/%s.rar' % (self.downDir, relname), url]
+		dlCmd = ['aria2c', '-t20', '-m5', '-q', '-x4', '-o%s/%s.rar' % (self.downDir, relname), url]
 		t = Thread(target=self.downloadThread, args=(dlCmd, relname))
 		t.start()
 		return True
