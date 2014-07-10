@@ -66,6 +66,9 @@ class MusicBot:
 	def setCompletedState(self, rid, link):
 		self.cur.execute('update awaiting set linkdl=?,state=2 where id=?', (link, rid))
 
+	def storageIsAlive(self):
+		return sub.call(['fping', '-q', self.destHost]) == 0
+
 	def downloadThread(self, cmd, rname):
 		retcode = sub.call(cmd)
 		if retcode == 0:
@@ -216,12 +219,13 @@ class MusicBot:
 		return False
 
 	def workflow(self):
-		self.processFailedReleases()
-		self.getWaitingReleases()
-		if self.waiting:
-			self.checkReleases()
-			if self.released:
-				self.composeAndSendEmail()
+		if self.storageIsAlive():
+			self.processFailedReleases()
+			self.getWaitingReleases()
+			if self.waiting:
+				self.checkReleases()
+				if self.released:
+					self.composeAndSendEmail()
 
 if __name__ == '__main__':
 	mbot = MusicBot(conf)
