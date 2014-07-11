@@ -9,7 +9,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import WebDriverException, NoSuchElementException, TimeoutException
-import re
 
 class Leecherus(object):
 	def __init__(self, url):
@@ -20,14 +19,13 @@ class Leecherus(object):
 		try:
 			self.browser.get('http://leecher.us')
 			wdw = WebDriverWait(self.browser, 10)
-			wdw.until(EC.visibility_of_element_located((By.NAME, 'links'))).send_keys(self.url)
-			wdw.until(EC.element_to_be_clickable((By.ID, 'get_link'))).click()
+			wdw.until(EC.visibility_of_element_located((By.NAME, 'link'))).send_keys(self.url)
 			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).click()
+			wdw.until(EC.element_to_be_clickable((By.ID, 'get_link'))).click()
 			self.browser.switch_to_window(self.browser.window_handles[1])
-			onclick = wdw.until(EC.presence_of_element_located((By.XPATH, '//button[@class="subscribe"]'))).get_attribute('onclick')
+			url = wdw.until(EC.presence_of_element_located((By.XPATH, '//a[@title="click here to download"]'))).get_attribute('href')
 		except (WebDriverException, NoSuchElementException, TimeoutException):
 			return False
 		finally:
 			self.browser.quit()
-		m = re.search("'(http://[^']+)',", onclick)
-		return False if not m else m.group(1)
+		return url
