@@ -33,7 +33,7 @@ switch ($_REQUEST['action']) {
 			}
 
 			if (!empty($row['releasePage']) && $row['state'] == 1) {
-				$row['releaseUrl'] = sprintf('<a href="%s">%s</a>', $row['releasePage'], $row['releaseName']);
+				$row['releaseUrl'] = null;
 			}
 
 			if ($row['state'] == 2) {
