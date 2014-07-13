@@ -33,16 +33,12 @@ switch ($_REQUEST['action']) {
 			}
 
 			if (!empty($row['releasePage']) && $row['state'] == 1) {
-				$row['releaseName'] = sprintf('<a href="%s">%s</a>', $row['releasePage'], $row['releaseName']);
+				$row['releaseUrl'] = sprintf('<a href="%s">%s</a>', $row['releasePage'], $row['releaseName']);
 			}
 
 			if ($row['state'] == 2) {
 				preg_match('/(\d{4})-\w+$/', $row['releaseName'], $rem);
-				$row['releaseName'] = sprintf('<a href="%s">%s</a>', $conf['main']['downWebPath'] . '/' . $rem[1] . '/' . $row['releaseName'] . '/', $row['releaseName']);
-			}		
-
-			if ($row['state'] == 0) {
-				$row['keywords'] = sprintf('<a href="%s">%s</a>', 'http://predb.me/?cats=music&search=' . $row['keywords'], $row['keywords']);
+				$row['releaseUrl'] = $conf['main']['downWebPath'] . '/' . $rem[1] . '/' . $row['releaseName'] . '/';
 			}
 
 			$result[] = $row;
