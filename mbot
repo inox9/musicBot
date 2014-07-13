@@ -28,6 +28,7 @@ class MusicBot:
 		self.downDir = conf.get('main','downDir')
 		self.unpackDir = conf.get('main','unpackDir')
 		self.destHost = conf.get('main', 'destHost')
+		self.destUser = conf.get('main', 'destUser')
 		self.destPort = conf.get('main', 'destPort')
 		self.destDir = conf.get('main', 'destDir')
 		self.email = conf.get('mail', 'address')
@@ -83,7 +84,7 @@ class MusicBot:
 			return False
 		os.remove(rarfile)
 		os.chdir(self.unpackDir)
-		cmd = ['rsync', '-Rqave', 'ssh -p%s' % self.destPort, '%s/' % relname, '%s:%s/%s' % (self.destHost, self.destDir, year)]
+		cmd = ['rsync', '-Rqave', 'ssh -p%s' % self.destPort, '%s/' % relname, '%s@%s:%s/%s' % (self.destUser, self.destHost, self.destDir, year)]
 		retcode = sub.call(cmd)
 		if retcode == 0:
 			sub.call(['rm', '-rf', relname])
