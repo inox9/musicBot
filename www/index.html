@@ -6,60 +6,11 @@
 	<link href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet'/>
 	<script src='//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular.min.js'></script>
 	<script src='//code.jquery.com/jquery-2.1.1.min.js'></script>
+	<script src='/media/app.js'></script>
 	<style type='text/css'>
 	#input { width: 500px; }
 	body, h1, h3 { font-family: "Lucida Grande", "Helvetica Neue", Helvetica, sans-serif; }
 	</style>
-	<script type='text/javascript'>
-	var app = angular.module('App', []);
-	app.controller('tableCtrl',
-		function tableCtrl($scope, $http, $rootScope) {
-			$scope.fetchList = function() {
-				$http.get('/api.php?action=get').success(function(data) {
-					$scope.releases = data;
-				});
-			}
-			$scope.rowClass = function(rel) {
-				switch (rel.state) {
-					case '1': return 'warning';
-					case '2': return 'success';
-					default: return '';
-				}
-			}
-			$scope.processField = function(val) {
-				return val ? val : 'N/A';
-			}
-			$scope.processName = function(rel) {
-				if (rel.releaseUrl) {
-					return rel.releaseUrl;
-				} else if (rel.releasePage) {
-					return rel.releasePage;
-				} else {
-					return null;
-				}
-			}
-			$rootScope.$on('updateList', function() {
-				$scope.fetchList();
-			});
-			$scope.fetchList();
-		}
-	);
-	app.controller('formCtrl',
-		function formCtrl($scope, $http, $rootScope) {
-			$scope.formData = {};
-			$scope.submit = function() {
-				$scope.formData['action'] = 'add';
-				$http({method: 'POST', url: '/api.php', data: $.param($scope.formData), headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
-				.success(function(data) {
-					if (data == 'OK') {
-						alert('Релиз добавлен успешно!');
-						$rootScope.$emit('updateList');
-					}
-				});
-			}
-		}
-	);
-	</script>
 </head>
 <body ng-app='App'>
 	<div class='container'>
@@ -67,7 +18,7 @@
 			<h1>Music Releases Crawler v0.15 <small>scenelog crawler &amp; downloader</small></h1>
 		</div>
 		<h3 class='text-center'>Добавить ожидаемый релиз</h3>
-		<form class='form-inline text-center' role='form' name='frm' ng-submit='submit()' ng-controller='formCtrl' novalidate>
+		<form class='form-inline text-center' role='form' name='frm' ng-submit='add()' ng-controller='releasesCtrl' novalidate>
 			<div class='form-group'>
 				<input class="form-control input-lg" type="text" placeholder="введите ключевые слова..." id='input' name='keywords' ng-model='formData.keywords' ng-minlength='5' ng-required='true'>
 			</div>
@@ -76,14 +27,15 @@
 			</div>
 		</form>
 		<h3 class='text-center'>Ожидаемые релизы</h3>
-		<table class='table table-condensed table-hover' id='releases' ng-controller='tableCtrl'>
+		<table class='table table-condensed table-hover' id='releases' ng-controller='releasesCtrl'>
 			<tr ng-repeat='rel in releases' ng-class='rowClass(rel)'>
 				<td>{{$index+1}}.</td>
 				<td>{{rel.dateAdded}}</td>
-				<td><a href='http://predb.me/?cats=music&amp;search={{rel.keywords}}'>{{rel.keywords}}</a></td>
-				<td ng-if='processName(rel)'><a href='{{processName(rel)}}'>{{rel.releaseName}}</a></td>
+				<td><a href='http://predb.me/?cats=music&amp;search={{rel.keywords}}' target='_blank'>{{rel.keywords}}</a></td>
+				<td ng-if='processName(rel)'><a href='{{processName(rel)}}' target='_blank'>{{rel.releaseName}}</a></td>
 				<td ng-if='!processName(rel)'>N/A</td>
 				<td>{{processField(rel.releaseDate)}}</td>
+				<td><button type="button" class="btn btn-danger" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button></td>
 			</tr>
 		</table>
 	</div>
