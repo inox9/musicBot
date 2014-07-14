@@ -10,6 +10,7 @@
 	<style type='text/css'>
 	#input { width: 500px; }
 	body, h1, h3 { font-family: "Lucida Grande", "Helvetica Neue", Helvetica, sans-serif; }
+	.mid { vertical-align: middle; }
 	</style>
 </head>
 <body ng-app='App'>
@@ -31,11 +32,11 @@
 			<tr ng-repeat='rel in releases' ng-class='rowClass(rel)'>
 				<td>{{$index+1}}.</td>
 				<td>{{rel.dateAdded}}</td>
-				<td><a href='http://predb.me/?cats=music&amp;search={{rel.keywords}}' target='_blank'>{{rel.keywords}}</a></td>
-				<td ng-if='processName(rel)'><a href='{{processName(rel)}}' target='_blank'>{{rel.releaseName}}</a></td>
-				<td ng-if='!processName(rel)'>N/A</td>
+				<td class='mid'><a href='http://predb.me/?cats=music&amp;search={{rel.keywords}}' target='_blank'>{{rel.keywords}}</a></td>
+				<td class='mid' ng-if='processName(rel)'><a href='{{processName(rel)}}' target='_blank'>{{rel.releaseName}}</a></td>
+				<td class='mid' ng-if='!processName(rel)'>N/A</td>
 				<td>{{processField(rel.releaseDate)}}</td>
-				<td><button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-danger btn-xs" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button></td>
+				<td class='mid'><button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-danger btn-xs" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button></td>
 			</tr>
 		</table>
 	</div>
