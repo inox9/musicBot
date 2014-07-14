@@ -54,7 +54,7 @@ app.controller('releasesCtrl', function releasesCtrl($scope, $http) {
 	}
 
 	$scope.remove = function(rid) {
-		if (confirm('Хотите удалить этот релиз из очереди ожидания?')) {
+		if (confirm('Хотите удалить этот релиз?')) {
 			$http.get('/api.php?action=remove&id=' + rid)
 			.success(function(data) {
 				if (data == 'OK') {

@@ -35,7 +35,7 @@
 				<td ng-if='processName(rel)'><a href='{{processName(rel)}}' target='_blank'>{{rel.releaseName}}</a></td>
 				<td ng-if='!processName(rel)'>N/A</td>
 				<td>{{processField(rel.releaseDate)}}</td>
-				<td><button type="button" class="btn btn-danger" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button></td>
+				<td><button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-danger btn-xs" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button></td>
 			</tr>
 		</table>
 	</div>
