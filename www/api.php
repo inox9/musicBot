@@ -46,6 +46,16 @@ switch ($_REQUEST['action']) {
 		header('Content-type: application/json');
 		print json_encode($result);
 		break;
+
+	case 'remove':
+		$res = $db->prepare('delete from awaiting where id = ?');
+		try {
+			$res->execute(array($_GET['id']));
+		} catch (PDOException $e) {
+			die($e->getMessage());
+		}
+		print 'OK';
+		break;
 }
 
 $db = null;
