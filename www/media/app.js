@@ -1,4 +1,4 @@
-var app = angular.module('App', []);
+var app = angular.module('App', ['ui.bootstrap']);
 app.controller('releasesCtrl', function($scope, $http) {
 	$scope.formData = {};
 	$scope.releases = [];
