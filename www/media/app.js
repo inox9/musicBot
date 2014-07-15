@@ -34,7 +34,7 @@ app.controller('releasesCtrl', function($scope, $http) {
 		$http({
 			method: 'POST',
 			url: '/api.php',
-			data: jQuery.param($scope.formData),
+			data: $.param($scope.formData),
 			headers: {'Content-Type': 'application/x-www-form-urlencoded'}
 		}).success(function(data) {
 			if (data == 'OK') {
