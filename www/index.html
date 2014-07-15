@@ -6,6 +6,7 @@
 	<link href='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet'/>
 	<link href='/media/favicon.ico' rel='icon' type='image/x-icon' />
 	<script src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js'></script>
+	<script src='//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap.min.js'></script>
 	<script src='//code.jquery.com/jquery-2.1.1.min.js'></script>
 	<script src='/media/app.js'></script>
 	<style type='text/css'>
@@ -42,6 +43,7 @@
 				<td class='mid'><button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-danger btn-xs" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button></td>
 			</tr>
 		</table>
+		<pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination>		
 	</div>
 </body>
 </html>

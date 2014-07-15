@@ -18,14 +18,19 @@ switch ($_REQUEST['action']) {
 		} catch (PDOException $e) {
 			die($e->getMessage());
 		}
-		print 'OK';
+		header('Content-type: text/plain');
+		echo 'OK';
 		break;
 
 	case 'get':
-		if (!$res = $db->query('select id,dateadded,keywords,releasename,releasedate,releasepage,state from awaiting order by state,-releasedate')) {
+		$limit = isset($_GET['limit']) ? intval($_GET['limit']) : 12;
+		$offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
+		$result = array();
+		$result['total'] = $db->query('select count(*) from awaiting')->fetchColumn();
+		if (!$res = $db->query('select id,dateadded,keywords,releasename,releasedate,releasepage,state from awaiting order by state,-releasedate limit ' . $offset . ',' . $limit)) {
 			die('DB error!');
 		}
-		$result = array();
+		$result['models'] = array();
 		while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 			$row['dateAdded'] = date('d.m.Y H:i', $row['dateAdded']);
 			$row['releaseUrl'] = null;
@@ -38,10 +43,10 @@ switch ($_REQUEST['action']) {
 				$row['releaseUrl'] = $conf['main']['downWebPath'] . '/' . $rem[1] . '/' . $row['releaseName'] . '/';
 			}
 
-			$result[] = $row;
+			$result['models'][] = $row;
 		}
 		header('Content-type: application/json');
-		print json_encode($result);
+		echo json_encode($result);
 		break;
 
 	case 'remove':
@@ -51,7 +56,8 @@ switch ($_REQUEST['action']) {
 		} catch (PDOException $e) {
 			die($e->getMessage());
 		}
-		print 'OK';
+		header('Content-type: text/plain');
+		echo 'OK';
 		break;
 }
 

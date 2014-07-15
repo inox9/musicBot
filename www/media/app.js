@@ -2,10 +2,27 @@ var app = angular.module('App', []);
 app.controller('releasesCtrl', function($scope, $http) {
 	$scope.formData = {};
 	$scope.releases = [];
+	$scope.totalItems = 0;
+	$scope.currentPage = 1;
+	$scope.pageLimit = 12;
+
+	$scope.setPage = function (pageNo) {
+		$scope.currentPage = pageNo;
+	};
+	$scope.pageChanged = function() {
+		$scope.get();
+	};
+	
 	$scope.get = function() {
-		$http.get('/api.php?action=get')
+		var params = {
+			action: 'get',
+			offset: $scope.pageLimit * ($scope.currentPage - 1),
+			limit: $scope.pageLimit
+		};
+		$http.get('/api.php?' + $.param(params))
 			.success(function(data) {
-				$scope.releases = data;
+				$scope.releases = data.models;
+				$scope.totalItems = data.total;
 			}).error(function(data) {
 				alert('Error occurred: ' + data);
 			});
@@ -39,6 +56,7 @@ app.controller('releasesCtrl', function($scope, $http) {
 		}).success(function(data) {
 			if (data == 'OK') {
 				alert('Релиз добавлен успешно!');
+				$scope.currentPage = 1;
 				$scope.formData['keywords'] = '';
 				$scope.get();
 			} else {
