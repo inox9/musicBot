@@ -43,7 +43,7 @@
 				<td class='mid'><button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-danger btn-xs" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button></td>
 			</tr>
 		</table>
-		<pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" max-size='5'></pagination>		
+		<pagination boundary-links='true' total-items='totalItems' ng-model='currentPage' previous-text='&lsaquo;' next-text='&rsaquo;' first-text='&laquo;' last-text='&raquo;' max-size='5' ng-change='pageChanged()'></pagination>		
 	</div>
 </body>
 </html>
