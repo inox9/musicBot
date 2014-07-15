@@ -6,13 +6,9 @@ app.controller('releasesCtrl', function($scope, $http) {
 	$scope.currentPage = 1;
 	$scope.pageLimit = 12;
 
-	$scope.setPage = function (pageNo) {
-		$scope.currentPage = pageNo;
-	};
-	$scope.pageChanged = function() {
+	$scope.setPage = function() {
 		$scope.get();
 	};
-	
 	$scope.get = function() {
 		var params = {
 			action: 'get',
