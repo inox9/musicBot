@@ -28,12 +28,9 @@ switch ($_REQUEST['action']) {
 		$result = array();
 		while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 			$row['dateAdded'] = date('d.m.Y H:i', $row['dateAdded']);
+			$row['releaseUrl'] = null;
 			if (!empty($row['releaseDate'])) {
 				$row['releaseDate'] = date('d.m.Y H:i', $row['releaseDate']);
-			}
-
-			if (!empty($row['releasePage']) && $row['state'] == 1) {
-				$row['releaseUrl'] = null;
 			}
 
 			if ($row['state'] == 2) {
