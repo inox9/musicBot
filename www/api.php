@@ -26,7 +26,7 @@ switch ($_REQUEST['action']) {
 		$limit = isset($_GET['limit']) ? intval($_GET['limit']) : 12;
 		$offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
 		$result = array();
-		$result['total'] = $db->query('select count(*) from awaiting')->fetchColumn();
+		$result['total'] = intval($db->query('select count(*) from awaiting')->fetchColumn());
 		if (!$res = $db->query('select id,dateadded,keywords,releasename,releasedate,releasepage,state from awaiting order by state,-releasedate limit ' . $offset . ',' . $limit)) {
 			die('DB error!');
 		}
