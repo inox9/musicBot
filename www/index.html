@@ -37,7 +37,7 @@
 		</div>
 		<table class='table table-condensed table-hover' id='releases'>
 			<tr ng-repeat='rel in releases' ng-class='rowClass(rel)'>
-				<td>{{$index+1}}.</td>
+				<td>{{$index+1+((currentPage-1)*pageLimit)}}.</td>
 				<td>{{rel.dateAdded}}</td>
 				<td class='mid'><a href='http://predb.me/?cats=music&amp;search={{rel.keywords}}' target='_blank'>{{rel.keywords}}</a></td>
 				<td class='mid' ng-if='processName(rel)'><a href='{{processName(rel)}}' target='_blank'>{{rel.releaseName}}</a></td>
