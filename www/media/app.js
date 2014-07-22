@@ -22,17 +22,17 @@ app.controller('releasesCtrl', function($scope, $http) {
 			}).error(function(data) {
 				alert('Error occurred: ' + data);
 			});
-	}
+	};
 	$scope.rowClass = function(rel) {
 		switch (rel.state) {
 			case '1': return 'warning';
 			case '2': return 'success';
 			default: return '';
 		}
-	}
+	};
 	$scope.processField = function(val) {
 		return val ? val : 'N/A';
-	}
+	};
 	$scope.processName = function(rel) {
 		if (rel.releaseUrl) {
 			return rel.releaseUrl;
@@ -41,7 +41,7 @@ app.controller('releasesCtrl', function($scope, $http) {
 		} else {
 			return null;
 		}
-	}
+	};
 	$scope.add = function() {
 		$scope.formData['action'] = 'add';
 		$http({
@@ -51,7 +51,7 @@ app.controller('releasesCtrl', function($scope, $http) {
 			headers: {'Content-Type': 'application/x-www-form-urlencoded'}
 		}).success(function(data) {
 			if (data == 'OK') {
-				alert('Релиз добавлен успешно!');
+				alert('Запрос добавлен успешно!');
 				$scope.currentPage = 1;
 				$scope.formData['keywords'] = '';
 				$scope.get();
@@ -61,13 +61,14 @@ app.controller('releasesCtrl', function($scope, $http) {
 		}).error(function(data) {
 			alert('Error occured: ' + data);
 		});
-	}
+	};
 	$scope.remove = function(rid) {
-		if (confirm('Хотите удалить этот релиз?')) {
-			$http.get('/api.php?action=remove&id=' + rid)
+		if (confirm('Хотите удалить этот запрос из очереди ожидания?')) {
+			var params = {action: 'remove', id: rid}
+			$http.get('/api.php?' + $.param(params))
 			.success(function(data) {
 				if (data == 'OK') {
-					alert('Релиз удален успешно!');
+					alert('Запрос удален успешно!');
 					$scope.get();
 				} else {
 					alert('Error - ' + data);
@@ -77,6 +78,24 @@ app.controller('releasesCtrl', function($scope, $http) {
 				alert('Error occurred: ' + data);
 			});
 		}
-	}
+	};
+	$scope.edit = function(rid, curValue) {
+		var newkw = prompt('Пожалуйста, введите новые ключевые слова', curValue);
+		if (newkw != null) {
+			var params = {action: 'edit', id: rid, newkeywords: newkw}
+			$http.get('/api.php?' + $.param(params))
+			.success(function(data) {
+				if (data == 'OK') {
+					alert('Запрос отредактирован!');
+					$scope.get();
+				} else {
+					alert('Error - ' + data);
+				}
+			})
+			.error(function(data) {
+				alert('Error occured: ' + data);
+			});
+		}
+	};
 	$scope.get();
 });
