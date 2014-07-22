@@ -52,7 +52,18 @@ switch ($_REQUEST['action']) {
 	case 'remove':
 		$res = $db->prepare('delete from awaiting where id = ?');
 		try {
-			$res->execute(array($_GET['id']));
+			$res->execute(array(intval($_GET['id'])));
+		} catch (PDOException $e) {
+			die($e->getMessage());
+		}
+		header('Content-type: text/plain');
+		echo 'OK';
+		break;
+
+	case 'edit':
+		$res = $db->prepare('update awaiting set keywords = ? where id = ?');
+		try {
+			$res->execute(array($_GET['newkeywords'], intval($_GET['id'])));
 		} catch (PDOException $e) {
 			die($e->getMessage());
 		}
