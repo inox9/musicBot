@@ -45,7 +45,7 @@
 				<td class='mid' ng-if='!processName(rel)'>N/A</td>
 				<td class='mid'>{{processField(rel.releaseDate)}}</td>
 				<td class='mid'>
-					<button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-danger btn-xs" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button>&nbsp;
+					<button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-danger btn-xs" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button> 
 					<button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-warning btn-xs" ng-click='edit(rel.id, rel.keywords)'><span class="glyphicon glyphicon-edit"></span></button>
 				</td>
 			</tr>
