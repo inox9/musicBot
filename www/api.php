@@ -27,7 +27,7 @@ switch ($_REQUEST['action']) {
 		$offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
 		$result = array();
 		$result['total'] = intval($db->query('select count(*) from awaiting')->fetchColumn());
-		if (!$res = $db->query('select id,dateadded,keywords,releasename,releasedate,releasepage,state from awaiting order by state,-releasedate limit ' . $offset . ',' . $limit)) {
+		if (!$res = $db->query('select id,dateadded,keywords,releasename,releasedate,releasepage,state from awaiting order by state,-id limit ' . $offset . ',' . $limit)) {
 			die('DB error!');
 		}
 		$result['models'] = array();
