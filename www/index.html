@@ -14,6 +14,7 @@
 	#input { width: 500px; }
 	body, h1, h3 { font-family: "Noto Sans", "Lucida Grande", "Helvetica Neue", Helvetica, sans-serif; }
 	.mid { vertical-align: middle !important; }
+	td .buttons { width: 63px; }
 	</style>
 </head>
 <body>
@@ -44,7 +45,7 @@
 				<td class='mid' ng-if='processName(rel)'><a href='{{processName(rel)}}' target='_blank'>{{rel.releaseName}}</a></td>
 				<td class='mid' ng-if='!processName(rel)'>N/A</td>
 				<td class='mid'>{{processField(rel.releaseDate)}}</td>
-				<td class='mid'>
+				<td class='mid buttons'>
 					<button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-danger btn-xs" ng-click='remove(rel.id)'><span class="glyphicon glyphicon-trash"></span></button> 
 					<button ng-if='rel.state == 0 || rel.state == 1' type="button" class="btn btn-warning btn-xs" ng-click='edit(rel.id, rel.keywords)'><span class="glyphicon glyphicon-edit"></span></button>
 				</td>
