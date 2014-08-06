@@ -38,8 +38,7 @@ class MusicBot:
 		self.hostPriority = ['firedrive', 'uploaded']
 		self.module_map = {
 			'firedrive': 1, 
-			'uploaded': 'leecherus',
-			'oboom': 'leecherus'
+			'uploaded': ['leecherus', 'premiumgeneratorlink'],
 		}
 		self.waiting = []
 		self.failed = []
@@ -206,14 +205,23 @@ class MusicBot:
 		t.start()
 		return True
 
+	def moduleGetLink(self, module, url):
+		mod = __import__(module)
+		dl_cls = getattr(mod, module.capitalize())
+		return dl_cls(url).get_link()
+
 	def downloadLink(self, urls, relname):
 		for host in self.hostPriority:
 			for url in urls:
 				if host in url:
 					mdl = self.getRightModule(host)
-					mod = __import__(mdl)
-					dl_cls = getattr(mod, mdl.capitalize())
-					link = dl_cls(url).get_link()
+					if isinstance(mdl, list):
+						for module in mdl:
+							link = self.moduleGetLink(module, url)
+							if link:
+								break
+					else:
+						link = self.moduleGetLink(mdl, url)
 					if link:
 						self.executeDownload(link, relname)
 						return url
