@@ -24,7 +24,7 @@ class Leecherus(object):
 			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).click()
 			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).click()
 			self.browser.switch_to_window(self.browser.window_handles[1])
-			onclick = wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).get_attribute('onclick')
+			onclick = wdw.until(EC.element_to_be_clickable((By.ID, 'get_link'))).get_attribute('onclick')
 		except (WebDriverException, NoSuchElementException, TimeoutException):
 			return False
 		finally:
