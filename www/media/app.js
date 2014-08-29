@@ -1,5 +1,5 @@
 var app = angular.module('App', ['ui.bootstrap']);
-app.controller('releasesCtrl', function($scope, $http) {
+app.controller('releasesCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.formData = {};
 	$scope.releases = [];
 	$scope.totalItems = 0;
@@ -98,4 +98,4 @@ app.controller('releasesCtrl', function($scope, $http) {
 		}
 	};
 	$scope.get();
-});
+}]);
