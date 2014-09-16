@@ -1,3 +1,3 @@
 from premiumgeneratorlink import Premiumgeneratorlink
 
-print Premiumgeneratorlink('http://uploaded.net/file/berd5xd6/Will_Atkinson-Victims-WEB-2014-TSP.rar').get_link()
+print Premiumgeneratorlink('http://uploaded.net/file/d4ycrwif/Darren_Porter-The_Oracle-TY036-WEB-2014-JUSTiFY.rar').get_link()

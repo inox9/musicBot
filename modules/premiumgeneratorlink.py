@@ -20,11 +20,11 @@ class Premiumgeneratorlink(object):
 		try:
 			self.browser.get('http://premiumgeneratorlink.com/')
 			self.browser.find_element_by_name('link').send_keys(self.url)
-			self.browser.find_element_by_xpath('//a[@class="input"]').click()
+			self.browser.find_element_by_xpath('//a[@class="button"]').click()
 			wdw = WebDriverWait(self.browser, 10)
-			wdw.until(EC.element_to_be_clickable((By.ID, 'Generate'))).click()
-			wdw.until(EC.element_to_be_clickable((By.ID, 'Generate'))).click()
-			link = wdw.until(EC.visibility_of_element_located((By.XPATH, '//a[@class="input"]'))).get_attribute('href')
+			wdw.until(EC.element_to_be_clickable((By.ID, 'check'))).click()
+			wdw.until(EC.element_to_be_clickable((By.ID, 'generate'))).click()
+			link = wdw.until(EC.visibility_of_element_located((By.XPATH, '//form[@class="center"]'))).get_attribute('action')
 		except (WebDriverException, NoSuchElementException, TimeoutException):
 			return False
 		finally:

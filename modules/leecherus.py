@@ -1,7 +1,7 @@
 # coding=utf8
 '''
 	Leecher.us direct link fetcher, uses phantomjs/selenium
-	version 0.1
+	version 0.2
 '''
 
 import re
@@ -20,11 +20,11 @@ class Leecherus(object):
 		try:
 			self.browser.get('http://leecher.us')
 			wdw = WebDriverWait(self.browser, 10)
-			wdw.until(EC.visibility_of_element_located((By.NAME, 'links'))).send_keys(self.url)
-			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).click()
-			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="subscribe"]'))).click()
+			wdw.until(EC.visibility_of_element_located((By.NAME, 'link'))).send_keys(self.url)
+			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="submit"]'))).click()
+			wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="submit" and @onclick]'))).click()
 			self.browser.switch_to_window(self.browser.window_handles[1])
-			onclick = wdw.until(EC.element_to_be_clickable((By.ID, 'get_link'))).get_attribute('onclick')
+			onclick = wdw.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="submit"]'))).get_attribute('onclick')
 		except (WebDriverException, NoSuchElementException, TimeoutException):
 			return False
 		finally:
