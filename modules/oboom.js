@@ -1,13 +1,15 @@
-#!/usr/local/bin/casperjs
-var casper = require('casper').create();
-var system = require('system');
+#!/usr/bin/env casperjs
+var casper = require('casper').create({pageSettings: {webSecurityEnabled: false}});
 var cp = require('child_process');
+var fs = require('fs');
+var currentFile = require('system').args[3];
 
-casper.lastResourceUrl = null;
-casper.captchaSavePath = '/tmp/recaptcha.jpg';
+var curFilePath = fs.absolute(currentFile).split('/');
+var lastResourceUrl = null;
+var captchaSavePath = '/tmp/recaptcha.jpg';
 
 casper.on('resource.requested', function(req) {
-	this.lastResourceUrl = req.url;
+	lastResourceUrl = req.url;
 });
 
 casper.cli.drop("cli");
@@ -22,10 +24,19 @@ casper.waitForSelector('#download_button', function() {
 });
 
 casper.waitUntilVisible('#recaptcha_challenge_image', function() {
-	this.captureSelector(this.captchaSavePath, '#recaptcha_challenge_image');
+	var captcha_url = this.evaluate(function () {
+		return document.querySelector('#recaptcha_challenge_image').src;
+	});
+
+	this.download(captcha_url, captchaSavePath);
 
 	var code = null;
-	cp.execFile(__dirname + '/antigate.sh', ['d70a01bb7ccbfa9869d3ebd71878fe88', this.captchaSavePath], {}, function(_, stdout, stderr) {
+	if (curFilePath.length > 1) {
+		curFilePath.pop();
+		fs.changeWorkingDirectory(curFilePath.join('/'));
+	}
+
+	cp.execFile('./antigate.sh', ['d70a01bb7ccbfa9869d3ebd71878fe88', captchaSavePath], {}, function(_, stdout, stderr) {
 		code = stdout.substring(0, stdout.indexOf('\n'));
 	});
 
@@ -36,8 +47,8 @@ casper.waitUntilVisible('#recaptcha_challenge_image', function() {
 	}, null, 30000);
 });
 
-casper.wait(3500, function() {
-	this.echo(this.lastResourceUrl);
+casper.wait(5000, function() {
+	this.echo(lastResourceUrl);
 });
 
 casper.run();
