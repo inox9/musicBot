@@ -1,3 +1,3 @@
-from premiumgeneratorlink import Premiumgeneratorlink
+from simplydebrid import Simplydebrid
 
-print Premiumgeneratorlink('http://uploaded.net/file/d4ycrwif/Darren_Porter-The_Oracle-TY036-WEB-2014-JUSTiFY.rar').get_link()
+print Simplydebrid('http://hugefiles.net/xnoiz899z685').get_link()
