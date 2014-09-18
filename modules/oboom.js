@@ -21,6 +21,8 @@ casper.start(url);
 
 casper.waitForSelector('#download_button', function() {
 	casper.click('#download_button');
+}, function() {
+	this.exit(0);
 });
 
 casper.waitUntilVisible('#recaptcha_challenge_image', function() {
