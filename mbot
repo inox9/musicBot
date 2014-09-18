@@ -84,7 +84,7 @@ class MusicBot:
 			return False
 		os.remove(rarfile)
 		os.chdir(self.unpackDir)
-		cmd = ['rsync', '-Rqave', 'ssh -p%s' % self.destPort, '%s/' % relname, '%s@%s:%s/%s' % (self.destUser, self.destHost, self.destDir, year)]
+		cmd = ['rsync', '--timeout=10', '-Rqave', 'ssh -p%s' % self.destPort, '%s/' % relname, '%s@%s:%s/%s' % (self.destUser, self.destHost, self.destDir, year)]
 		retcode = sub.call(cmd)
 		if retcode == 0:
 			sub.call(['rm', '-rf', relname])
