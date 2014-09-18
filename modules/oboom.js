@@ -1,4 +1,4 @@
-#!/usr/bin/env casperjs
+#!/usr/local/bin/casperjs
 var casper = require('casper').create({pageSettings: {webSecurityEnabled: false}});
 var cp = require('child_process');
 var fs = require('fs');
