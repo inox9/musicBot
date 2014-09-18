@@ -13,5 +13,8 @@ class Oboom(object):
 		
 	def get_link(self):
 		d = os.path.dirname(os.path.abspath(__file__))
-		link = subprocess.check_output(['%s/oboom.js' % d, self.url])
+		try:
+			link = subprocess.check_output(['%s/oboom.js' % d, self.url])
+		except subprocess.CalledProcessError:
+			return False
 		return link.strip() if len(link.strip()) > 0 else False
