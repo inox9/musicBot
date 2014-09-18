@@ -35,10 +35,11 @@ class MusicBot:
 		self.apikey = conf.get('mail', 'apikey')
 		self.domain = conf.get('mail', 'domain')
 		self.downWebPath = conf.get('main', 'downWebPath')
-		self.hostPriority = ['firedrive', 'uploaded']
+		self.hostPriority = ['firedrive', 'uploaded', 'oboom']
 		self.module_map = {
-			'firedrive': 1, 
+			'firedrive': 1,
 			'uploaded': ['leecherus', 'premiumgeneratorlink'],
+			'oboom': 1
 		}
 		self.waiting = []
 		self.failed = []

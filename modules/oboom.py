@@ -4,9 +4,14 @@
 	version 0.1
 '''
 
+import os.path
+import subprocess
+
 class Oboom(object):
 	def __init__(self, url):
 		self.url = url
 		
 	def get_link(self):
-		pass
+		d = os.path.dirname(os.path.abspath(__file__))
+		link = subprocess.check_output(['%s/oboom.js' % d, self.url])
+		return link.strip() if len(link.strip()) > 0 else False

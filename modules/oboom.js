@@ -28,6 +28,10 @@ casper.waitUntilVisible('#recaptcha_challenge_image', function() {
 		return document.querySelector('#recaptcha_challenge_image').src;
 	});
 
+	if (fs.exists(captchaSavePath)) {
+		fs.remove(captchaSavePath);
+	}
+
 	this.download(captcha_url, captchaSavePath);
 
 	var code = null;
@@ -44,7 +48,7 @@ casper.waitUntilVisible('#recaptcha_challenge_image', function() {
 		return code !== null;
 	}, function () {
 		this.fill('form#recaptcha', {'recaptcha_response_field': code.trim()}, true);
-	}, null, 30000);
+	}, null, 35000);
 });
 
 casper.wait(5000, function() {
