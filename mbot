@@ -89,7 +89,7 @@ class MusicBot:
 		tries = 0
 		while retcode != 0 and tries < 5:
 			cmd = ['rsync', '--timeout=10', '-Rquave', 'ssh -p%s' % self.destPort, '%s/' % relname, '%s@%s:%s/%s' % (self.destUser, self.destHost, self.destDir, year)]
-			retcode = sub.call(cmd)
+			retcode = sub.call(cmd, stdout=open(os.devnull, 'wb'), stderr=sub.STDOUT)
 			tries += 1
 			if retcode != 0:
 				time.sleep(5)
