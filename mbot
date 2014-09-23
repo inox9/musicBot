@@ -15,6 +15,7 @@ import sys
 from threading import Thread
 from ConfigParser import ConfigParser
 from dateutil.parser import parse
+from jinja2 import Environment, FileSystemLoader
 
 conf = ConfigParser()
 conf.read(CONF_PATH)
@@ -98,21 +99,16 @@ class MusicBot:
 		os.chdir(os.path.expanduser('~'))
 
 	def composeAndSendEmail(self):
-		html  = u'Привет, друг!<br><br>'
-		html += u'Рад сообщить, что совсем недавно вышли некоторые из ожидаемых тобой релизов :-). А именно:<br>'
-		i = 1
-		for rel in self.released:
+		wdir = os.path.dirname(os.path.abspath(__file__))
+		env = Environment(loader=FileSystemLoader('%s/tmpl' % wdir))
+		tmpl = env.get_template('mail.html')
+		vars = {'released': self.released}
+		for rel in vars['released']:
 			rem = re.match(r'(\d{4})-\w+$', rel['name'])
-			if rem:
-				year = rem[1]
-			else:
-				year = time.strftime('%Y')
-			webPath = '%s/%s' % (self.downWebPath, year)
-			html += u'%d. %s GMT - <b><a href=\'%s/%s/\'>%s</a></b> (по запросу <i>%s</i>)<br>' % (i, rel['time'], webPath, rel['name'], rel['name'], rel['query'])
-			i += 1
-		html += u'<br>В случае успешного скачивания релизы будут распакованы по месту назначения и станут доступны по указанным выше ссылкам.<br>'
-		html += u'До связи! Искренне Ваш, MusicRobot.'
+			year = rem[1] if rem else time.strftime('%Y')
+			rel['webPath'] = '%s/%s' % (self.downWebPath, year)
 
+		html = tmpl.render(vars)
 		return req.post(
 			"https://api.mailgun.net/v2/%s/messages" % self.domain,
 			auth=("api", self.apikey),
