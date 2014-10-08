@@ -20,7 +20,7 @@ class Premiumgeneratorlink(object):
 		try:
 			self.browser.get('http://premiumgeneratorlink.com/')
 			self.browser.find_element_by_name('link').send_keys(self.url)
-			self.browser.find_element_by_xpath('//a[@class="button"]').click()
+			self.browser.find_element_by_xpath('//a[@class="input"]').click()
 			wdw = WebDriverWait(self.browser, 10)
 			wdw.until(EC.element_to_be_clickable((By.ID, 'check'))).click()
 			wdw.until(EC.element_to_be_clickable((By.ID, 'generate'))).click()
