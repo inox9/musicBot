@@ -39,7 +39,7 @@ class MusicBot:
 		self.hostPriority = ['firedrive', 'uploaded', 'hugefiles', 'oboom']
 		self.module_map = {
 			'firedrive': 1,
-			'uploaded': ['leecherus', 'premiumgeneratorlink'],
+			'uploaded': ['premiumgeneratorlink', 'leecherus'],
 			'oboom': 1,
 			'hugefiles': 'simplydebrid'
 		}
